@@ -3,6 +3,10 @@
 Production-grade n8n workflows combining large language models, vector databases, and multi-API orchestration to automate enterprise business processes.
 
 ---
+## NOTE:
+2 files with the JSON code for the workflows have also been attached for direct download and fully-ready workflow.
+
+---
 
 ## Quick Navigation
 
