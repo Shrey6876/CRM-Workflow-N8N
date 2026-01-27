@@ -16,7 +16,8 @@ Production-grade n8n workflows combining large language models, vector databases
 | [WORKFLOWS.md](./docs/WORKFLOWS.md) | Individual workflow specifications |
 | [SETUP.md](./docs/SETUP.md) | Installation, credentials, deployment |
 | [EXAMPLES.md](./docs/EXAMPLES.md) | Real execution examples and expected outputs |
-
+| [Customer Support Agent.json] | Workflow Code for the agent|
+| [pinecone_setup.json] | Workflow for Pinecone RAG|
 ---
 
 ## Overview
