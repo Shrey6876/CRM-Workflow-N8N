@@ -1,0 +1,498 @@
+{
+  "name": "Customer Support Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "74216d69-098c-4b9f-826f-0ed9cb851405",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WzJxcHZEr9GRYcVp",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9523e827-4bb9-4911-bc11-779e5ef74546",
+              "name": "EmailBody",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            },
+            {
+              "id": "5bb3ebd5-6740-4579-9f1e-fb828d08c8ed",
+              "name": "SenderEmail",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "5a869107-78c1-4d15-894f-567d138c335f",
+              "name": "ThreadID",
+              "value": "={{ $json.threadId }}",
+              "type": "string"
+            },
+            {
+              "id": "c1ace662-59d3-4712-992b-0030de25b370",
+              "name": "Subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "713db8fa-4e4d-44bb-818a-017c54f32190",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=Analyze the content of the following email and determine whether\nit is related to any of the following topics, mark customer Support as true, otherwise mark it as false.\n\nCustomer support topics include:\n- Questions about order status, tracking, or changes\n- Refund or return requests\n- Subscription cancellations or adjustments\n- Technical issues with products, website or app\n- Payment or billing inquiries\n- Requests for speaking with a support representative.\n\nOutput: Provide the response in JSON format with a field named \"customerSupport\" set to true or false."
+            },
+            {
+              "content": "={{ $json.EmailBody }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "21ea5c28-8ba8-41d1-8c47-b93fe4e75e6b",
+      "name": "Check if Customer Support",
+      "credentials": {
+        "openAiApi": {
+          "id": "8oAeWyWeinIId3Gc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output[0].content[0].text.customerSupport }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "29292d1f-42d0-4799-a3ad-7afa4c984b7c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "YES "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "68f09ac5-0277-4f22-8ee5-6068b669728f",
+                    "leftValue": "={{ $json.output[0].content[0].text.customerSupport }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "NO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "8736297e-82d4-4e0e-a02f-6738cbe70a1a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.Subject }}\n{{ $('Edit Fields').item.json.EmailBody }}",
+        "options": {
+          "systemMessage": "=Role and Purpose\n\nYou are a customer support agent for Sleepyowl, trained to handle customer requests,inquiries,and concerns withprofessionalism,empathy,and efficiency.\n\nYour primary goal is to ensure customer satisfaction while upholding company policies and values.\n\n# Task Specification\n1. Read and Analyze: Carefully read the customer's email to identify their main query or concern.\n2. Use the **customerSupportKnowledgeBase** tool to look up relevant policies or FAQs to ensure accurate and policy-compliant responses.\n\n3. Create a draft response using **createDraft** tool\n4. After drafting the email, provide a concise summary of the email content.\n\nEnsure the response:\n* directly addresses the query\n* maintains polite\nand prof tone\n* ends with a sign off: \"Kelly from SleepyOwl\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        -224
+      ],
+      "id": "ac59265c-132c-410e-aab9-ac3d91fe9470",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        64
+      ],
+      "id": "725d338d-6255-4c6a-8d54-09063cbe12bb",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8oAeWyWeinIId3Gc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Document Containing policy and FAQs"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        -32
+      ],
+      "id": "9f30caec-798f-4969-a6eb-8b32f350d774",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "threadId": "={{ $('Edit Fields').item.json.ThreadID }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        -16
+      ],
+      "id": "d4bb7b2d-2bdc-468f-b4e7-a73540bc18e9",
+      "name": "Create a draft in Gmail",
+      "webhookId": "270a7f8c-f532-46a1-9ab0-31d14dadd501",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WzJxcHZEr9GRYcVp",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "customer-support-doc",
+          "mode": "list",
+          "cachedResultName": "customer-support-doc"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        176
+      ],
+      "id": "4755418e-34e1-4e11-8bee-449ceb314ec9",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "rEXOvnyU87vFTl29",
+          "name": "PineconeApi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        336
+      ],
+      "id": "0c3d1ddb-ffb5-4c9a-bd88-d0f5e8764d0c",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "8oAeWyWeinIId3Gc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        144
+      ],
+      "id": "a452e333-460a-4c85-aa6c-3a23548cda83",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "8oAeWyWeinIId3Gc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19bc228b7f31638a",
+          "threadId": "19bc228b7f31638a",
+          "snippet": "I have received a defective product can you explain your refund policy?",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 5771,
+          "historyId": "2677783",
+          "internalDate": "1768488994000",
+          "labels": [
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "IMPORTANT",
+              "name": "IMPORTANT"
+            },
+            {
+              "id": "CATEGORY_PERSONAL",
+              "name": "CATEGORY_PERSONAL"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "From": "Rishab Jain <rishabprakash12@gmail.com>",
+          "Subject": "Refund policy query",
+          "To": "rishabprakashjain12@gmail.com"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Check if Customer Support",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Customer Support": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d5d1f889-9c3e-4c32-9493-21fe7ffe1b5a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2dc06d266cea12164dcd63e4ee61a27c69f4f26aea82fe8b19581e367d078ffb"
+  },
+  "id": "0GaOzwsjAoeNS_e3IFXdP",
+  "tags": []
+}
