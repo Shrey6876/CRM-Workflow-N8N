@@ -1,3 +1,19 @@
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b27,50:f78166,100:ffa657&height=180&section=header&text=AI-Powered%20Automation%20Suite&fontSize=38&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Customer%20Support%20Agent%20%7C%20RAG%20Pipeline%20%7C%20Pinecone%20%7C%20n8n&descSize=16&descAlignY=55&descColor=c9d1d9" width="100%" />
+
+![n8n](https://img.shields.io/badge/n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white)
+![OpenAI](https://img.shields.io/badge/GPT--4.1-412991?style=flat-square&logo=openai&logoColor=white)
+![Pinecone](https://img.shields.io/badge/Pinecone-000000?style=flat-square&logo=pinecone&logoColor=white)
+![Gmail](https://img.shields.io/badge/Gmail-EA4335?style=flat-square&logo=gmail&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=flat-square)
+![Last Commit](https://img.shields.io/github/last-commit/Shrey6876/CRM-Workflow-N8N?style=flat-square&color=blue)
+
+</div>
+
+---
+
 # AI-Powered Automation Suite
 
 Production-grade n8n workflows combining large language models, vector databases, and multi-API orchestration to automate enterprise business processes.
@@ -373,3 +389,13 @@ These workflows are provided as-is for educational and commercial use. Modify fr
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
 - [Pinecone Documentation](https://docs.pinecone.io/)
 - [LangChain Agents](https://python.langchain.com/docs/agents)
+
+---
+
+<div align="center">
+
+**Built by [Shrey Jain](https://github.com/Shrey6876)** — AI & Finance Researcher
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1b27,50:f78166,100:ffa657&height=100&section=footer" width="100%" />
+
+</div>
